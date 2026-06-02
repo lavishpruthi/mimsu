@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>mimsu.in — Premium Domain For Sale</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a08;
+      --surface: #111110;
+      --gold: #c9a84c;
+      --gold-light: #e8c97a;
+      --gold-dim: #7a6030;
+      --cream: #f0e8d5;
+      --muted: #5a574f;
+      --text: #ddd5c0;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Grain overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.4;
+    }
+
+    /* ── HERO ─────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    /* Radial glow */
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(201,168,76,0.08) 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Decorative horizontal lines */
+    .rule {
+      width: 100%;
+      max-width: 700px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold-dim), transparent);
+      margin: 1.8rem auto;
+      animation: fadeIn 1.2s ease both;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.65rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold);
+      border: 1px solid var(--gold-dim);
+      padding: 0.4rem 1.2rem;
+      border-radius: 2px;
+      animation: fadeIn 0.6s ease both;
+    }
+
+    .domain-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(4rem, 14vw, 10rem);
+      line-height: 1;
+      color: var(--cream);
+      letter-spacing: -0.02em;
+      animation: slideUp 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s both;
+      position: relative;
+    }
+
+    .domain-name span {
+      color: var(--gold);
+    }
+
+    .tagline {
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      animation: fadeIn 1s ease 0.5s both;
+      margin-top: 0.3rem;
+    }
+
+    /* ── CARDS ROW ────────────────────────────────────── */
+    .cards {
+      display: flex;
+      gap: 1px;
+      max-width: 700px;
+      width: 100%;
+      margin: 2.5rem auto 0;
+      animation: fadeIn 1s ease 0.7s both;
+    }
+
+    .card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid #2a2920;
+      padding: 1.4rem 1rem;
+      text-align: center;
+    }
+
+    .card-icon {
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+    }
+
+    .card-value {
+      font-size: 0.85rem;
+      color: var(--cream);
+      font-weight: 500;
+    }
+
+    /* ── CTA SECTION ──────────────────────────────────── */
+    .cta-section {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+      animation: fadeIn 1s ease 0.9s both;
+    }
+
+    .cta-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 0.6rem;
+    }
+
+    .cta-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      line-height: 1.8;
+      margin-bottom: 2rem;
+    }
+
+    .contact-box {
+      background: var(--surface);
+      border: 1px solid var(--gold-dim);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .contact-box::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    .contact-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.7rem;
+    }
+
+    .contact-email {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1rem, 3.5vw, 1.4rem);
+      color: var(--cream);
+      text-decoration: none;
+      display: block;
+      margin-bottom: 1.5rem;
+      transition: color 0.2s;
+    }
+
+    .contact-email:hover { color: var(--gold-light); }
+
+    .btn-mail {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--gold);
+      color: var(--bg);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 0.85rem 2rem;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-mail::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .btn-mail:hover { background: var(--gold-light); transform: translateY(-1px); }
+    .btn-mail:hover::after { opacity: 1; }
+    .btn-mail:active { transform: translateY(0); }
+
+    /* ── FOOTER ───────────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 1.5rem 2rem;
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      color: var(--muted);
+      border-top: 1px solid #1a1a18;
+    }
+
+    /* ── ANIMATIONS ───────────────────────────────────── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Floating dot decoration */
+    .dot-grid {
+      position: absolute;
+      top: 10%;
+      right: 5%;
+      display: grid;
+      grid-template-columns: repeat(5, 6px);
+      gap: 8px;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .dot-grid span {
+      width: 2px;
+      height: 2px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: block;
+    }
+
+    .dot-grid-left {
+      left: 5%;
+      right: auto;
+      top: 70%;
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <!-- Decorative dots -->
+    <div class="dot-grid">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <div class="dot-grid dot-grid-left">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+
+    <div class="badge">Premium Domain · For Sale</div>
+
+    <div class="rule"></div>
+
+    <h1 class="domain-name">mimsu<span>.in</span></h1>
+    <p class="tagline">A rare, short & memorable .in domain</p>
+
+    <div class="rule"></div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">✦</div>
+        <div class="card-label">Length</div>
+        <div class="card-value">5 chars</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">◈</div>
+        <div class="card-label">Extension</div>
+        <div class="card-value">.in (India)</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">◇</div>
+        <div class="card-label">Type</div>
+        <div class="card-value">Brandable</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⬡</div>
+        <div class="card-label">Status</div>
+        <div class="card-value">Available</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="rule"></div>
+
+    <h2 class="cta-heading">Make It Yours</h2>
+    <p class="cta-sub">
+      Short domains are increasingly rare. <strong style="color:var(--cream)">mimsu.in</strong> is crisp,
+      unique, and ready to anchor your next brand, product, or startup.
+      Reach out to discuss pricing and transfer.
+    </p>
+
+    <div class="contact-box">
+      <div class="contact-label">Contact the Owner</div>
+      <a class="contact-email" href="mailto:helolavish@gmail.com?subject=Inquiry%3A%20mimsu.in%20Domain%20Purchase">
+        helolavish@gmail.com
+      </a>
+      <a class="btn-mail" href="mailto:helolavish@gmail.com?subject=Inquiry%3A%20mimsu.in%20Domain%20Purchase&body=Hi%2C%0A%0AI'm%20interested%20in%20purchasing%20the%20domain%20mimsu.in.%0A%0APlease%20share%20the%20asking%20price%20and%20transfer%20details.%0A%0AThank%20you.">
+        ✉ &nbsp;Send Inquiry
+      </a>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 &nbsp;·&nbsp; mimsu.in &nbsp;·&nbsp; All rights reserved
+  </footer>
+
+</body>
+</html>
