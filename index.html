@@ -382,7 +382,7 @@
         <button type="button" class="btn-secondary" onclick="openDefaultMail()">Default Mail App</button>
         <button type="button" class="btn-secondary" onclick="copyBody()">Copy Body</button>
       </div>
-      <p class="hint">"Open in Gmail" launches Gmail's web compose window in a new tab, pre-filled — so it always opens in Gmail regardless of your device's default mail app.</p>
+      <p class="hint">"Open in Gmail" tries the Gmail app first (iOS/Android) and falls back to Gmail web if the app isn't installed or you're on desktop — either way it's pre-filled and skips your device's default mail app.</p>
     </div>
 
     <!-- RIGHT: LIVE PREVIEW -->
@@ -553,8 +553,14 @@ function toggleOptional(){
   box.classList.toggle('open');
 }
 
-function openGmail(){
-  const r = currentData();
+function getPlatform(){
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'desktop';
+}
+
+function gmailWebUrl(r){
   const params = new URLSearchParams({
     view: 'cm',
     fs: '1',
@@ -564,7 +570,52 @@ function openGmail(){
   });
   if (r.cc) params.append('cc', r.cc);
   if (r.bcc) params.append('bcc', r.bcc);
-  window.open(`https://mail.google.com/mail/?${params.toString()}`, '_blank');
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}
+
+function openGmail(){
+  const r = currentData();
+  const platform = getPlatform();
+  const webUrl = gmailWebUrl(r);
+
+  if (platform === 'ios'){
+    // Gmail iOS app custom URL scheme
+    const params = new URLSearchParams({
+      to: r.recipientEmail,
+      subject: els.subject.value,
+      body: els.body.value,
+    });
+    if (r.cc) params.append('cc', r.cc);
+    if (r.bcc) params.append('bcc', r.bcc);
+    const appUrl = `googlegmail:///co?${params.toString()}`;
+
+    // Try the app; if it's not installed, iOS just does nothing and we fall back after a short delay
+    let fellBack = false;
+    const timer = setTimeout(() => {
+      if (!fellBack){
+        fellBack = true;
+        window.open(webUrl, '_blank');
+      }
+    }, 900);
+    window.addEventListener('pagehide', () => { fellBack = true; clearTimeout(timer); }, { once: true });
+    window.location.href = appUrl;
+
+  } else if (platform === 'android'){
+    // Android intent URL: opens Gmail app directly if installed, otherwise falls back via S.browser_fallback_url
+    const params = new URLSearchParams({
+      to: r.recipientEmail,
+      subject: els.subject.value,
+      body: els.body.value,
+    });
+    if (r.cc) params.append('cc', r.cc);
+    if (r.bcc) params.append('bcc', r.bcc);
+    const intentUrl = `intent://co?${params.toString()}#Intent;scheme=googlegmail;package=com.google.android.gm;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+    window.location.href = intentUrl;
+
+  } else {
+    // Desktop: no native app to target, open Gmail web compose in a new tab
+    window.open(webUrl, '_blank');
+  }
 }
 
 function openDefaultMail(){
