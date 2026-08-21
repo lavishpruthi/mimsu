@@ -560,17 +560,27 @@ function getPlatform(){
   return 'desktop';
 }
 
+// Build a query string manually so spaces are encoded as %20, not '+'
+// (URLSearchParams uses application/x-www-form-urlencoded, which some
+// mail apps don't decode back into spaces).
+function buildQuery(paramsObj){
+  return Object.entries(paramsObj)
+    .filter(([, v]) => v !== undefined && v !== null && v !== '')
+    .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v).replace(/%20/g, '%20')}`)
+    .join('&');
+}
+
 function gmailWebUrl(r){
-  const params = new URLSearchParams({
+  const query = buildQuery({
     view: 'cm',
     fs: '1',
     to: r.recipientEmail,
     su: els.subject.value,
     body: els.body.value,
+    cc: r.cc,
+    bcc: r.bcc,
   });
-  if (r.cc) params.append('cc', r.cc);
-  if (r.bcc) params.append('bcc', r.bcc);
-  return `https://mail.google.com/mail/?${params.toString()}`;
+  return `https://mail.google.com/mail/?${query}`;
 }
 
 function openGmail(){
@@ -580,14 +590,14 @@ function openGmail(){
 
   if (platform === 'ios'){
     // Gmail iOS app custom URL scheme
-    const params = new URLSearchParams({
+    const query = buildQuery({
       to: r.recipientEmail,
       subject: els.subject.value,
       body: els.body.value,
+      cc: r.cc,
+      bcc: r.bcc,
     });
-    if (r.cc) params.append('cc', r.cc);
-    if (r.bcc) params.append('bcc', r.bcc);
-    const appUrl = `googlegmail:///co?${params.toString()}`;
+    const appUrl = `googlegmail:///co?${query}`;
 
     // Try the app; if it's not installed, iOS just does nothing and we fall back after a short delay
     let fellBack = false;
@@ -602,14 +612,14 @@ function openGmail(){
 
   } else if (platform === 'android'){
     // Android intent URL: opens Gmail app directly if installed, otherwise falls back via S.browser_fallback_url
-    const params = new URLSearchParams({
+    const query = buildQuery({
       to: r.recipientEmail,
       subject: els.subject.value,
       body: els.body.value,
+      cc: r.cc,
+      bcc: r.bcc,
     });
-    if (r.cc) params.append('cc', r.cc);
-    if (r.bcc) params.append('bcc', r.bcc);
-    const intentUrl = `intent://co?${params.toString()}#Intent;scheme=googlegmail;package=com.google.android.gm;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
+    const intentUrl = `intent://co?${query}#Intent;scheme=googlegmail;package=com.google.android.gm;S.browser_fallback_url=${encodeURIComponent(webUrl)};end`;
     window.location.href = intentUrl;
 
   } else {
