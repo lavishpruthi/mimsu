@@ -1,0 +1,91 @@
+/**
+ * variables.css
+ * Design tokens for Data Tools. Dark ("signal") theme is the default
+ * aesthetic; the light theme is an explicit opt-in via [data-theme="light"]
+ * or the theme toggle. Every other stylesheet consumes these custom
+ * properties only — no hex values should appear outside this file.
+ */
+
+:root {
+  /* ---- Typography ---- */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ---- Radii / elevation ---- */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --sidebar-width: 224px;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-med: 240ms;
+
+  /* ---- Color: dark / "signal" theme (default) ---- */
+  --bg: #0A0E16;
+  --bg-grid: rgba(255, 255, 255, 0.035);
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-solid: #131924;
+  --surface-2: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --ink: #E9EFF7;
+  --ink-muted: #8CA0B8;
+  --ink-faint: #57667A;
+
+  --accent: #33E6C4;          /* signal cyan — primary actions, active state */
+  --accent-ink: #04211C;      /* text on top of --accent */
+  --accent-soft: rgba(51, 230, 196, 0.14);
+  --accent-2: #9C7CFF;        /* violet — loader + rare secondary highlight */
+  --accent-2-soft: rgba(156, 124, 255, 0.16);
+
+  --danger: #FF6B6B;
+  --danger-bg: rgba(255, 107, 107, 0.12);
+  --success: #4ADE80;
+  --success-bg: rgba(74, 222, 128, 0.12);
+  --focus-ring: #6FD8FF;
+
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+/* ---- Color: light theme override ---- */
+:root[data-theme="light"] {
+  --bg: #EEF1F6;
+  --bg-grid: rgba(10, 20, 40, 0.035);
+  --surface: #FFFFFF;
+  --surface-solid: #FFFFFF;
+  --surface-2: #F3F6FA;
+  --border: #D9E0E9;
+  --border-strong: #B9C4D2;
+
+  --ink: #131A26;
+  --ink-muted: #5C6B7E;
+  --ink-faint: #93A0B0;
+
+  --accent: #0C9C82;
+  --accent-ink: #FFFFFF;
+  --accent-soft: rgba(12, 156, 130, 0.1);
+  --accent-2: #6A4FE0;
+  --accent-2-soft: rgba(106, 79, 224, 0.1);
+
+  --danger: #C6423A;
+  --danger-bg: rgba(198, 66, 58, 0.08);
+  --success: #1F9D5C;
+  --success-bg: rgba(31, 157, 92, 0.08);
+  --focus-ring: #0C7FB0;
+
+  --shadow-lg: 0 20px 50px rgba(20, 30, 50, 0.12);
+  color-scheme: light;
+}

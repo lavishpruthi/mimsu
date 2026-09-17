@@ -1,0 +1,93 @@
+/**
+ * loader.css
+ * The one deliberately bold animated moment in the UI: shown while a
+ * tool is running. Built from the vocabulary of the subject matter
+ * itself — JSON/XML delimiters — rather than a generic spinner.
+ */
+
+.loader {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, var(--accent-2-soft), transparent 60%),
+    var(--surface);
+  overflow: hidden;
+}
+.loader.active {
+  display: flex;
+}
+
+.loader-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.loader-glyphs {
+  display: flex;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 600;
+}
+.loader-glyphs span {
+  display: inline-block;
+  color: var(--accent-2);
+  opacity: 0.3;
+  animation: glyphPulse 1.15s ease-in-out infinite;
+}
+.loader-glyphs span:nth-child(1) { animation-delay: 0ms; }
+.loader-glyphs span:nth-child(2) { animation-delay: 120ms; }
+.loader-glyphs span:nth-child(3) { animation-delay: 240ms; }
+.loader-glyphs span:nth-child(4) { animation-delay: 360ms; }
+.loader-glyphs span:nth-child(5) { animation-delay: 480ms; }
+
+@keyframes glyphPulse {
+  0%, 100% { opacity: 0.28; transform: translateY(0) scale(1); text-shadow: none; }
+  50%      { opacity: 1;    transform: translateY(-3px) scale(1.18); text-shadow: 0 0 12px var(--accent-2); }
+}
+
+.loader-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.loader-label .scramble-char {
+  color: var(--accent);
+}
+
+.loader-track {
+  position: relative;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.loader-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34%;
+  left: -34%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: sweep 0.9s ease-in-out infinite;
+}
+@keyframes sweep {
+  0%   { left: -34%; }
+  100% { left: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-glyphs span { animation: none; opacity: 0.9; }
+  .loader-fill { animation: none; left: 0; width: 100%; opacity: 0.5; }
+}

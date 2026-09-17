@@ -1,0 +1,111 @@
+/**
+ * buttons.css
+ * Every clickable control in the app shares this base, then picks a
+ * variant. Labels are always sentence case with a small glyph prefix so
+ * the action reads at a glance — never icon-only, never all-caps.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn .glyph {
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+}
+
+/* Primary — the one call to action per view (Run / Beautify / Convert...) */
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  box-shadow: 0 0 0 0 var(--accent-soft);
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 4px 18px var(--accent-soft);
+}
+.btn-primary .glyph {
+  color: var(--accent-ink);
+  opacity: 0.75;
+}
+
+/* Ghost — quiet secondary actions (Clear, Load sample) */
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-muted);
+}
+.btn-ghost:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+/* Icon-row buttons inside pane headers (Copy / Download) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--ink-muted);
+  font-size: 11.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.icon-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+.icon-btn .glyph {
+  font-family: var(--font-mono);
+}
+
+/* Theme toggle, top bar */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}

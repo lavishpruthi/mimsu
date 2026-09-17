@@ -1,0 +1,81 @@
+/**
+ * layout.css
+ * Structural layout only: the app shell, sidebar, topbar, and responsive
+ * behavior. Visual styling of individual pieces lives in components.css.
+ */
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 12px var(--space-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-solid);
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* ---------- Body layout ---------- */
+.layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-solid);
+  padding: var(--space-4) 0;
+  overflow-y: auto;
+}
+
+main#view {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6) 48px;
+}
+
+.pagefoot {
+  padding: 10px var(--space-5);
+  border-top: 1px solid var(--border);
+  color: var(--ink-faint);
+  font-size: 11.5px;
+  background: var(--surface-solid);
+}
+
+@media (max-width: 860px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: var(--space-2) 0;
+    display: flex;
+    overflow-x: auto;
+  }
+  main#view {
+    padding: var(--space-4);
+  }
+}

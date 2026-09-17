@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Tools — JSON &amp; XML Utilities</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ---- css/variables.css ---- */
+/**
+ * variables.css
+ * Design tokens for Data Tools. Dark ("signal") theme is the default
+ * aesthetic; the light theme is an explicit opt-in via [data-theme="light"]
+ * or the theme toggle. Every other stylesheet consumes these custom
+ * properties only — no hex values should appear outside this file.
+ */
+
+:root {
+  /* ---- Typography ---- */
+  --font-display: 'Space Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+
+  /* ---- Radii / elevation ---- */
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
+  --sidebar-width: 224px;
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 120ms;
+  --dur-med: 240ms;
+
+  /* ---- Color: dark / "signal" theme (default) ---- */
+  --bg: #0A0E16;
+  --bg-grid: rgba(255, 255, 255, 0.035);
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-solid: #131924;
+  --surface-2: rgba(255, 255, 255, 0.03);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.18);
+
+  --ink: #E9EFF7;
+  --ink-muted: #8CA0B8;
+  --ink-faint: #57667A;
+
+  --accent: #33E6C4;          /* signal cyan — primary actions, active state */
+  --accent-ink: #04211C;      /* text on top of --accent */
+  --accent-soft: rgba(51, 230, 196, 0.14);
+  --accent-2: #9C7CFF;        /* violet — loader + rare secondary highlight */
+  --accent-2-soft: rgba(156, 124, 255, 0.16);
+
+  --danger: #FF6B6B;
+  --danger-bg: rgba(255, 107, 107, 0.12);
+  --success: #4ADE80;
+  --success-bg: rgba(74, 222, 128, 0.12);
+  --focus-ring: #6FD8FF;
+
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+/* ---- Color: light theme override ---- */
+:root[data-theme="light"] {
+  --bg: #EEF1F6;
+  --bg-grid: rgba(10, 20, 40, 0.035);
+  --surface: #FFFFFF;
+  --surface-solid: #FFFFFF;
+  --surface-2: #F3F6FA;
+  --border: #D9E0E9;
+  --border-strong: #B9C4D2;
+
+  --ink: #131A26;
+  --ink-muted: #5C6B7E;
+  --ink-faint: #93A0B0;
+
+  --accent: #0C9C82;
+  --accent-ink: #FFFFFF;
+  --accent-soft: rgba(12, 156, 130, 0.1);
+  --accent-2: #6A4FE0;
+  --accent-2-soft: rgba(106, 79, 224, 0.1);
+
+  --danger: #C6423A;
+  --danger-bg: rgba(198, 66, 58, 0.08);
+  --success: #1F9D5C;
+  --success-bg: rgba(31, 157, 92, 0.08);
+  --focus-ring: #0C7FB0;
+
+  --shadow-lg: 0 20px 50px rgba(20, 30, 50, 0.12);
+  color-scheme: light;
+}
+
+
+/* ---- css/base.css ---- */
+/**
+ * base.css
+ * Reset + global element defaults. No component-specific rules here.
+ */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 1px 1px, var(--bg-grid) 1px, transparent 1px) 0 0 / 22px 22px,
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--dur-med) var(--ease-out), color var(--dur-med) var(--ease-out);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0;
+}
+
+a {
+  color: var(--accent);
+}
+
+button, input, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+/* Scrollbars — thin, on-theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
+/* ---- css/layout.css ---- */
+/**
+ * layout.css
+ * Structural layout only: the app shell, sidebar, topbar, and responsive
+ * behavior. Visual styling of individual pieces lives in components.css.
+ */
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 12px var(--space-5);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-solid);
+  flex-wrap: wrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+/* ---------- Body layout ---------- */
+.layout {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  background: var(--surface-solid);
+  padding: var(--space-4) 0;
+  overflow-y: auto;
+}
+
+main#view {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: var(--space-5) var(--space-6) 48px;
+}
+
+.pagefoot {
+  padding: 10px var(--space-5);
+  border-top: 1px solid var(--border);
+  color: var(--ink-faint);
+  font-size: 11.5px;
+  background: var(--surface-solid);
+}
+
+@media (max-width: 860px) {
+  .layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: var(--space-2) 0;
+    display: flex;
+    overflow-x: auto;
+  }
+  main#view {
+    padding: var(--space-4);
+  }
+}
+
+
+/* ---- css/buttons.css ---- */
+/**
+ * buttons.css
+ * Every clickable control in the app shares this base, then picks a
+ * variant. Labels are always sentence case with a small glyph prefix so
+ * the action reads at a glance — never icon-only, never all-caps.
+ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink);
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--dur-fast) var(--ease-out),
+              background var(--dur-fast) var(--ease-out),
+              transform var(--dur-fast) var(--ease-out);
+}
+.btn:hover {
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+.btn:active {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+.btn .glyph {
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+}
+
+/* Primary — the one call to action per view (Run / Beautify / Convert...) */
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  box-shadow: 0 0 0 0 var(--accent-soft);
+}
+.btn-primary:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 4px 18px var(--accent-soft);
+}
+.btn-primary .glyph {
+  color: var(--accent-ink);
+  opacity: 0.75;
+}
+
+/* Ghost — quiet secondary actions (Clear, Load sample) */
+.btn-ghost {
+  background: transparent;
+  border-color: var(--border);
+  color: var(--ink-muted);
+}
+.btn-ghost:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+
+/* Icon-row buttons inside pane headers (Copy / Download) */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: 1px solid transparent;
+  color: var(--ink-muted);
+  font-size: 11.5px;
+  font-family: var(--font-body);
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.icon-btn:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+.icon-btn .glyph {
+  font-family: var(--font-mono);
+}
+
+/* Theme toggle, top bar */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--ink-muted);
+  border-radius: var(--radius-sm);
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: var(--font-mono);
+}
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+
+/* ---- css/components.css ---- */
+/**
+ * components.css
+ * Visual styling for discrete UI pieces: brand mark, sidebar links, the
+ * home directory table, tool workspace panes, the options toolbar, stat
+ * cards, banners and the toast. Button styling lives in buttons.css and
+ * the loader lives in loader.css.
+ */
+
+/* ---------- Brand mark ---------- */
+.brand-mark {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16.5px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.brand-glyph {
+  color: var(--accent);
+  font-family: var(--font-mono);
+}
+.routepath {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--ink-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---------- Sidebar ---------- */
+.side-group {
+  margin-bottom: var(--space-4);
+}
+.side-group-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-faint);
+  padding: 0 var(--space-4) 6px;
+  letter-spacing: 1px;
+}
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--space-4);
+  color: var(--ink-muted);
+  text-decoration: none;
+  font-size: 13.5px;
+  border-left: 2px solid transparent;
+  transition: color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out);
+}
+.side-link:hover {
+  color: var(--ink);
+  background: var(--surface-2);
+}
+.side-link.active {
+  color: var(--ink);
+  border-left-color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 500;
+}
+.side-link .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  flex-shrink: 0;
+}
+.side-link.active .dot {
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+@media (max-width: 860px) {
+  .sidebar { flex-direction: row; gap: var(--space-2); }
+  .side-group { display: flex; align-items: center; gap: 2px; margin-bottom: 0; white-space: nowrap; }
+  .side-group-label { padding: 0 8px; }
+  .side-link { border-left: none; border-bottom: 2px solid transparent; white-space: nowrap; }
+  .side-link.active { border-bottom-color: var(--accent); }
+}
+
+/* ---------- Home / directory ---------- */
+.home-head h1 {
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+.home-head p {
+  color: var(--ink-muted);
+  margin: 0 0 var(--space-5);
+  max-width: 62ch;
+}
+.index-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface);
+}
+.index-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.5px;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding: 10px var(--space-4);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.index-table td {
+  padding: 12px var(--space-4);
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.index-table tr:last-child td {
+  border-bottom: none;
+}
+.index-table tr:hover td {
+  background: var(--surface-2);
+}
+.index-table a {
+  text-decoration: none;
+  font-weight: 600;
+  color: var(--ink);
+}
+.index-table a:hover {
+  color: var(--accent);
+}
+.index-path {
+  font-family: var(--font-mono);
+  color: var(--ink-muted);
+  font-size: 12.5px;
+}
+.index-desc {
+  color: var(--ink-muted);
+  font-size: 13px;
+}
+.menu-pill {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  border: 1px solid var(--accent-soft);
+  background: var(--accent-soft);
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-left: 8px;
+}
+
+/* ---------- Tool header ---------- */
+.tool-head { margin-bottom: var(--space-4); }
+.tool-head h1 { font-size: 20px; margin-bottom: 4px; }
+.tool-head p { color: var(--ink-muted); margin: 0; font-size: 13.5px; }
+
+/* ---------- Toolbar ---------- */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin-bottom: var(--space-3);
+}
+.toolbar .opt {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+}
+.toolbar select,
+.toolbar input[type="text"] {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+.toolbar input[type="text"] { width: 130px; }
+.toolbar .spacer { flex: 1; }
+
+/* ---------- Panes ---------- */
+.panes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+@media (max-width: 860px) {
+  .panes { grid-template-columns: 1fr; }
+}
+.pane {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-height: 360px;
+}
+.pane-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+}
+.pane textarea {
+  flex: 1;
+  border: none;
+  resize: none;
+  padding: 14px;
+  font-family: var(--font-mono);
+  font-size: 12.8px;
+  line-height: 1.6;
+  background: transparent;
+  color: var(--ink);
+  width: 100%;
+}
+.pane textarea:focus { outline: none; }
+.pane-actions { display: flex; gap: 4px; }
+
+/* ---------- Banner ---------- */
+.banner {
+  margin-top: var(--space-3);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  font-size: 13px;
+  display: none;
+  white-space: pre-wrap;
+  font-family: var(--font-mono);
+}
+.banner.show { display: block; }
+.banner.error { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger); }
+.banner.success { background: var(--success-bg); color: var(--success); border: 1px solid var(--success); }
+
+/* ---------- Stat bar / cards ---------- */
+.statbar {
+  margin-top: var(--space-3);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+}
+.statbar b { color: var(--ink); font-weight: 600; }
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+}
+.stat-card .n {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.stat-card .l {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+
+/* ---------- Toast ---------- */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  background: var(--surface-solid);
+  border: 1px solid var(--border-strong);
+  color: var(--ink);
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
+  font-size: 12.5px;
+  box-shadow: var(--shadow-lg);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+  z-index: 50;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+
+/* ---- css/loader.css ---- */
+/**
+ * loader.css
+ * The one deliberately bold animated moment in the UI: shown while a
+ * tool is running. Built from the vocabulary of the subject matter
+ * itself — JSON/XML delimiters — rather than a generic spinner.
+ */
+
+.loader {
+  display: none;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  margin-bottom: var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(135deg, var(--accent-2-soft), transparent 60%),
+    var(--surface);
+  overflow: hidden;
+}
+.loader.active {
+  display: flex;
+}
+
+.loader-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.loader-glyphs {
+  display: flex;
+  gap: 10px;
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-weight: 600;
+}
+.loader-glyphs span {
+  display: inline-block;
+  color: var(--accent-2);
+  opacity: 0.3;
+  animation: glyphPulse 1.15s ease-in-out infinite;
+}
+.loader-glyphs span:nth-child(1) { animation-delay: 0ms; }
+.loader-glyphs span:nth-child(2) { animation-delay: 120ms; }
+.loader-glyphs span:nth-child(3) { animation-delay: 240ms; }
+.loader-glyphs span:nth-child(4) { animation-delay: 360ms; }
+.loader-glyphs span:nth-child(5) { animation-delay: 480ms; }
+
+@keyframes glyphPulse {
+  0%, 100% { opacity: 0.28; transform: translateY(0) scale(1); text-shadow: none; }
+  50%      { opacity: 1;    transform: translateY(-3px) scale(1.18); text-shadow: 0 0 12px var(--accent-2); }
+}
+
+.loader-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.loader-label .scramble-char {
+  color: var(--accent);
+}
+
+.loader-track {
+  position: relative;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.loader-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 34%;
+  left: -34%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), var(--accent-2), transparent);
+  box-shadow: 0 0 10px var(--accent);
+  animation: sweep 0.9s ease-in-out infinite;
+}
+@keyframes sweep {
+  0%   { left: -34%; }
+  100% { left: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader-glyphs span { animation: none; opacity: 0.9; }
+  .loader-fill { animation: none; left: 0; width: 100%; opacity: 0.5; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark"><span class="brand-glyph">{ }</span> Data Tools</span>
+      <span class="routepath" id="routepath">/</span>
+    </div>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle color theme">theme: auto</button>
+  </header>
+  <div class="layout">
+    <nav class="sidebar" id="sidebar" aria-label="Tools"></nav>
+    <main id="view" role="main"></main>
+  </div>
+  <footer class="pagefoot">All parsing and conversion runs locally in your browser. No document contents are sent anywhere.</footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---- js/core/dom.js ---- */
+/**
+ * dom.js
+ * Minimal element-builder helper. Keeps UI modules free of innerHTML
+ * (and therefore free of injection risk) since every value is set via
+ * DOM APIs or textContent, never parsed as markup.
+ */
+
+/**
+ * @param {string} tag
+ * @param {Object<string, any>} [attrs]
+ * @param {(Node|string|null|undefined)[] | Node | string} [children]
+ * @returns {HTMLElement}
+ */
+function el(tag, attrs = {}, children = []) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === "class") {
+      node.className = value;
+    } else if (key.startsWith("on") && typeof value === "function") {
+      node.addEventListener(key.slice(2), value);
+    } else if (value !== false && value !== null && value !== undefined) {
+      node.setAttribute(key, value === true ? "" : value);
+    }
+  }
+  for (const child of [].concat(children)) {
+    if (child === null || child === undefined) continue;
+    node.appendChild(typeof child === "string" ? document.createTextNode(child) : child);
+  }
+  return node;
+}
+
+/** Remove all children of a node. */
+function clear(node) {
+  while (node.firstChild) node.removeChild(node.firstChild);
+}
+
+
+/* ---- js/core/format-utils.js ---- */
+/**
+ * format-utils.js
+ * Small, dependency-free helpers used by every tool for stats and
+ * error-location reporting.
+ */
+
+/** UTF-8 byte length of a string. */
+function byteSize(str) {
+  return new TextEncoder().encode(str).length;
+}
+
+function lineCount(str) {
+  if (str === "") return 0;
+  return str.split("\n").length;
+}
+
+/** Convert a character index into a 1-based {line, column}. */
+function indexToLineCol(str, index) {
+  const upto = str.slice(0, index);
+  const lines = upto.split("\n");
+  return { line: lines.length, column: lines[lines.length - 1].length + 1 };
+}
+
+
+/* ---- js/core/json-utils.js ---- */
+/**
+ * json-utils.js
+ * JSON-specific parsing and structural analysis, shared by the
+ * beautifier, minifier and validator tools.
+ */
+
+/**
+ * Parse JSON and normalize errors into an actionable message.
+ * @returns {{ok:true, value:*} | {ok:false, message:string}}
+ */
+function parseJsonSafe(text) {
+  if (text.trim() === "") {
+    return { ok: false, message: "Input is empty. Paste or type a JSON document to continue." };
+  }
+  try {
+    return { ok: true, value: JSON.parse(text) };
+  } catch (err) {
+    const match = /position (\d+)/.exec(err.message);
+    if (match) {
+      const pos = Number(match[1]);
+      const { line, column } = indexToLineCol(text, pos);
+      return { ok: false, message: `${err.message}\nLocation: line ${line}, column ${column}.` };
+    }
+    return { ok: false, message: err.message };
+  }
+}
+
+/** Walk a parsed JSON value and collect structural statistics. */
+function analyzeJson(value) {
+  let objects = 0, arrays = 0, strings = 0, numbers = 0, booleans = 0, nulls = 0, keys = 0;
+  let maxDepth = 0;
+
+  (function walk(v, depth) {
+    maxDepth = Math.max(maxDepth, depth);
+    if (v === null) { nulls++; return; }
+    if (Array.isArray(v)) {
+      arrays++;
+      for (const item of v) walk(item, depth + 1);
+      return;
+    }
+    if (typeof v === "object") {
+      objects++;
+      const ks = Object.keys(v);
+      keys += ks.length;
+      for (const k of ks) walk(v[k], depth + 1);
+      return;
+    }
+    if (typeof v === "string") strings++;
+    else if (typeof v === "number") numbers++;
+    else if (typeof v === "boolean") booleans++;
+  })(value, 0);
+
+  return {
+    rootType: Array.isArray(value) ? "array" : value === null ? "null" : typeof value,
+    objects, arrays, strings, numbers, booleans, nulls, keys, maxDepth
+  };
+}
+
+
+/* ---- js/core/xml-utils.js ---- */
+/**
+ * xml-utils.js
+ * XML-specific escaping, name validation and safe parsing, shared by the
+ * formatter and the JSON<->XML conversion tools.
+ */
+
+function escapeXmlText(value) {
+  return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function escapeXmlAttr(value) {
+  return escapeXmlText(value).replace(/"/g, "&quot;");
+}
+
+/** True if a string is a valid XML element/attribute name (simplified). */
+function isValidXmlName(name) {
+  return /^[A-Za-z_][\w.-]*$/.test(name);
+}
+
+/** Fall back to a safe generic tag name when a JSON key isn't XML-legal. */
+function sanitizeTagName(name) {
+  return isValidXmlName(name) ? name : "item";
+}
+
+/**
+ * Parse XML text, throwing a clean, user-facing Error on malformed input.
+ * @returns {Document}
+ */
+function parseXmlSafe(text) {
+  if (text.trim() === "") {
+    throw new Error("Input is empty. Paste or type an XML document to continue.");
+  }
+  const doc = new DOMParser().parseFromString(text, "application/xml");
+  const errorNode = doc.querySelector("parsererror");
+  if (errorNode) {
+    const raw = errorNode.textContent.trim().split("\n")[0];
+    throw new Error(`Malformed XML: ${raw}`);
+  }
+  return doc;
+}
+
+
+/* ---- js/core/clipboard.js ---- */
+/**
+ * clipboard.js
+ * Copy-to-clipboard with a manual fallback for browsers or contexts
+ * where the async Clipboard API is unavailable.
+ */
+
+/** @returns {Promise<boolean>} whether the copy succeeded */
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (err) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      return true;
+    } catch (fallbackErr) {
+      return false;
+    }
+  }
+}
+
+
+/* ---- js/core/download.js ---- */
+/**
+ * download.js
+ * Saves generated text output as a file. Pure client-side: builds a
+ * Blob, briefly attaches an anchor with a download attribute, and
+ * revokes the object URL once the browser has taken it.
+ */
+function downloadText(filename, text, mimeType = "text/plain") {
+  const blob = new Blob([text], { type: `${mimeType};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+
+/* ---- js/core/toast.js ---- */
+/**
+ * toast.js
+ * A single reused toast element, shown briefly for transient feedback
+ * (copy succeeded, download unavailable, etc.).
+ */
+let timer = null;
+
+function showToast(message) {
+  const el = document.getElementById("toast");
+  if (!el) return;
+  el.textContent = message;
+  el.classList.add("show");
+  clearTimeout(timer);
+  timer = setTimeout(() => el.classList.remove("show"), 1800);
+}
+
+
+/* ---- js/core/loader.js ---- */
+/**
+ * loader.js
+ * A reusable, on-theme "processing" indicator built from the symbols of
+ * the subject matter (JSON/XML delimiters) instead of a generic spinner:
+ * pulsing brace/angle-bracket glyphs, a scanning gradient bar, and a
+ * status label that decrypts into place with a text-scramble effect.
+ */
+
+const SCRAMBLE_CHARS = "{}[]<>/\\:\",;|_=-";
+
+/** Classic "text scramble" reveal: settles character-by-character. */
+class TextScramble {
+  constructor(node) {
+    this.node = node;
+    this.frame = 0;
+    this.queue = [];
+    this.frameRequest = null;
+    this.resolve = null;
+  }
+
+  setText(newText) {
+    const oldText = this.node.textContent;
+    const length = Math.max(oldText.length, newText.length);
+    const promise = new Promise((resolve) => { this.resolve = resolve; });
+
+    this.queue = [];
+    for (let i = 0; i < length; i++) {
+      const from = oldText[i] || "";
+      const to = newText[i] || "";
+      const start = Math.floor(Math.random() * 12);
+      const end = start + Math.floor(Math.random() * 14) + 6;
+      this.queue.push({ from, to, start, end, char: "" });
+    }
+
+    cancelAnimationFrame(this.frameRequest);
+    this.frame = 0;
+    this._update();
+    return promise;
+  }
+
+  _update() {
+    let output = "";
+    let complete = 0;
+    for (const item of this.queue) {
+      if (this.frame >= item.end) {
+        complete++;
+        output += item.to;
+      } else if (this.frame >= item.start) {
+        if (!item.char || Math.random() < 0.3) {
+          item.char = SCRAMBLE_CHARS[Math.floor(Math.random() * SCRAMBLE_CHARS.length)];
+        }
+        output += `<span class="scramble-char">${item.char}</span>`;
+      } else {
+        output += item.from;
+      }
+    }
+    this.node.innerHTML = output;
+
+    if (complete === this.queue.length) {
+      this.resolve();
+    } else {
+      this.frame++;
+      this.frameRequest = requestAnimationFrame(() => this._update());
+    }
+  }
+}
+
+class Loader {
+  /** @param {HTMLElement} mountPoint element the loader UI is appended to */
+  constructor(mountPoint) {
+    this.labelEl = el("div", { class: "loader-label" }, "READY");
+    this.fillEl = el("div", { class: "loader-fill" });
+    this.root = el("div", { class: "loader", role: "status", "aria-live": "polite" }, [
+      el("div", { class: "loader-row" }, [
+        el("div", { class: "loader-glyphs" }, ["{", "<", "/", ">", "}"].map(ch => el("span", {}, ch))),
+        this.labelEl
+      ]),
+      el("div", { class: "loader-track" }, [this.fillEl])
+    ]);
+    mountPoint.appendChild(this.root);
+    this.scramble = new TextScramble(this.labelEl);
+  }
+
+  show() { this.root.classList.add("active"); }
+  hide() { this.root.classList.remove("active"); }
+
+  /**
+   * Run work behind the loader, guaranteeing it stays visible at least
+   * `minDuration` ms so the animation is always perceptible — even
+   * though most conversions here finish in under a millisecond.
+   * @template T
+   * @param {string} label status text to scramble into view
+   * @param {() => T} workFn
+   * @param {number} [minDuration]
+   * @returns {Promise<T>}
+   */
+  async run(label, workFn, minDuration = 420) {
+    this.show();
+    this.scramble.setText(label);
+    const start = performance.now();
+    let result, error;
+    try {
+      result = workFn();
+    } catch (err) {
+      error = err;
+    }
+    const elapsed = performance.now() - start;
+    if (elapsed < minDuration) {
+      await new Promise((resolve) => setTimeout(resolve, minDuration - elapsed));
+    }
+    this.hide();
+    if (error) throw error;
+    return result;
+  }
+}
+
+
+/* ---- js/core/router.js ---- */
+/**
+ * router.js
+ * Tiny hash router. Each tool owns a path such as "json-beautifier",
+ * addressed at "#/json-beautifier" — independent of the others and
+ * bookmarkable/linkable on its own.
+ */
+
+function currentPath() {
+  return location.hash.replace(/^#\/?/, "");
+}
+
+/**
+ * @param {(path: string) => void} onChange called immediately and on
+ *   every hash change
+ */
+function initRouter(onChange) {
+  window.addEventListener("hashchange", () => onChange(currentPath()));
+  onChange(currentPath());
+}
+
+
+/* ---- js/tools/json-beautifier.js ---- */
+const jsonBeautifier = (function () {
+/**
+ * tools/json-beautifier.js
+ * Registered in js/config/tools.config.js. See that file for the shape
+ * every tool module must export.
+ */
+
+const INDENT_CHOICES = [
+  { value: "2", label: "2 spaces" },
+  { value: "4", label: "4 spaces" },
+  { value: "tab", label: "Tab" }
+];
+
+function resolveIndent(v) {
+  return v === "tab" ? "\t" : Number(v);
+}
+
+return {
+  id: "json-beautifier",
+  menuId: "json",
+  title: "JSON Beautifier",
+  desc: "Pretty-print a JSON document with configurable indentation.",
+  runLabel: "Beautify",
+  outputExt: "json",
+  outputLabel: "Formatted JSON",
+  loadingLabel: "FORMATTING",
+  sample: `{"id":1,"name":"Ada Lovelace","active":true,"tags":["math","computing"],"address":{"city":"London","zip":null}}`,
+  options: [
+    { id: "indent", type: "select", label: "Indent", choices: INDENT_CHOICES, default: "2" },
+    { id: "sortKeys", type: "checkbox", label: "Sort keys", default: false }
+  ],
+  run(input, opts) {
+    const parsed = parseJsonSafe(input);
+    if (!parsed.ok) throw new Error(parsed.message);
+
+    const replacer = opts.sortKeys
+      ? (key, val) => {
+          if (val && typeof val === "object" && !Array.isArray(val)) {
+            return Object.keys(val).sort().reduce((acc, k) => { acc[k] = val[k]; return acc; }, {});
+          }
+          return val;
+        }
+      : null;
+
+    return JSON.stringify(parsed.value, replacer, resolveIndent(opts.indent));
+  }
+};
+
+})();
+
+/* ---- js/tools/json-minifier.js ---- */
+const jsonMinifier = (function () {
+
+return {
+  id: "json-minifier",
+  menuId: "json",
+  title: "JSON Minifier",
+  desc: "Strip whitespace and produce a compact single-line payload.",
+  runLabel: "Minify",
+  outputExt: "json",
+  outputLabel: "Minified JSON",
+  loadingLabel: "MINIFYING",
+  sample: `{\n  "id": 1,\n  "name": "Ada Lovelace",\n  "active": true,\n  "tags": ["math", "computing"]\n}`,
+  options: [],
+  run(input) {
+    const parsed = parseJsonSafe(input);
+    if (!parsed.ok) throw new Error(parsed.message);
+    return JSON.stringify(parsed.value);
+  }
+};
+
+})();
+
+/* ---- js/tools/json-validator.js ---- */
+const jsonValidator = (function () {
+
+return {
+  id: "json-validator",
+  menuId: "json",
+  title: "JSON Parser & Validator",
+  desc: "Validate JSON syntax and inspect the document's structure.",
+  runLabel: "Validate",
+  outputExt: "json",
+  outputLabel: "Formatted output",
+  loadingLabel: "VALIDATING",
+  sample: `{"orderId":"A-1042","items":[{"sku":"X1","qty":2},{"sku":"X2","qty":1}],"total":58.5,"paid":true,"notes":null}`,
+  options: [],
+  showStats: true,
+  run(input) {
+    const parsed = parseJsonSafe(input);
+    if (!parsed.ok) throw new Error(parsed.message);
+    const stats = analyzeJson(parsed.value);
+    return { output: JSON.stringify(parsed.value, null, 2), stats };
+  }
+};
+
+})();
+
+/* ---- js/tools/json-to-xml.js ---- */
+const jsonToXml = (function () {
+
+function jsonToXml(value, rootName, indentUnit, includeDeclaration) {
+  const lines = [];
+  const root = sanitizeTagName(rootName || "root");
+
+  function emit(tag, val, depth) {
+    const pad = indentUnit.repeat(depth);
+    if (val === null || val === undefined) {
+      lines.push(`${pad}<${tag}/>`);
+      return;
+    }
+    if (Array.isArray(val)) {
+      if (val.length === 0) { lines.push(`${pad}<${tag}/>`); return; }
+      for (const item of val) emit(tag, item, depth);
+      return;
+    }
+    if (typeof val === "object") {
+      const keys = Object.keys(val);
+      if (keys.length === 0) { lines.push(`${pad}<${tag}/>`); return; }
+      lines.push(`${pad}<${tag}>`);
+      for (const key of keys) emit(sanitizeTagName(key), val[key], depth + 1);
+      lines.push(`${pad}</${tag}>`);
+      return;
+    }
+    const text = escapeXmlText(val);
+    lines.push(text === "" ? `${pad}<${tag}/>` : `${pad}<${tag}>${text}</${tag}>`);
+  }
+
+  emit(root, value, 0);
+  const decl = includeDeclaration ? '<?xml version="1.0" encoding="UTF-8"?>\n' : "";
+  return decl + lines.join("\n");
+}
+
+const INDENT_CHOICES = [
+  { value: "2", label: "2 spaces" },
+  { value: "4", label: "4 spaces" }
+];
+
+return {
+  id: "json-to-xml",
+  menuId: "convert",
+  title: "JSON \u2192 XML",
+  desc: "Convert a JSON document into an XML document.",
+  runLabel: "Convert",
+  outputExt: "xml",
+  outputLabel: "XML output",
+  loadingLabel: "BUILDING_XML",
+  sample: `{"employee":{"id":101,"name":"Grace Hopper","skills":["COBOL","compilers"],"manager":null}}`,
+  options: [
+    { id: "root", type: "text", label: "Root element", default: "root" },
+    { id: "indent", type: "select", label: "Indent", choices: INDENT_CHOICES, default: "2" },
+    { id: "declaration", type: "checkbox", label: "XML declaration", default: true }
+  ],
+  run(input, opts) {
+    const parsed = parseJsonSafe(input);
+    if (!parsed.ok) throw new Error(parsed.message);
+    if (opts.root && !isValidXmlName(opts.root)) {
+      throw new Error(`"${opts.root}" is not a valid XML element name. Use letters, digits, "_", "-", "." and start with a letter or underscore.`);
+    }
+    const indentUnit = " ".repeat(Number(opts.indent));
+    return jsonToXml(parsed.value, opts.root || "root", indentUnit, opts.declaration);
+  }
+};
+
+})();
+
+/* ---- js/tools/xml-to-json.js ---- */
+const xmlToJson = (function () {
+
+function xmlNodeToJson(el) {
+  const attrs = {};
+  for (const attr of Array.from(el.attributes || [])) attrs[attr.name] = attr.value;
+
+  const childElements = Array.from(el.childNodes).filter(n => n.nodeType === 1);
+  const textContent = Array.from(el.childNodes)
+    .filter(n => n.nodeType === 3 || n.nodeType === 4)
+    .map(n => n.nodeValue)
+    .join("")
+    .trim();
+
+  const hasAttrs = Object.keys(attrs).length > 0;
+
+  if (childElements.length === 0) {
+    if (hasAttrs) {
+      const result = { "@attributes": attrs };
+      if (textContent !== "") result["#text"] = textContent;
+      return result;
+    }
+    return textContent;
+  }
+
+  const result = {};
+  if (hasAttrs) result["@attributes"] = attrs;
+  for (const child of childElements) {
+    const value = xmlNodeToJson(child);
+    const name = child.nodeName;
+    if (Object.prototype.hasOwnProperty.call(result, name)) {
+      if (!Array.isArray(result[name])) result[name] = [result[name]];
+      result[name].push(value);
+    } else {
+      result[name] = value;
+    }
+  }
+  return result;
+}
+
+const INDENT_CHOICES = [
+  { value: "2", label: "2 spaces" },
+  { value: "4", label: "4 spaces" }
+];
+
+return {
+  id: "xml-to-json",
+  menuId: "convert",
+  title: "XML \u2192 JSON",
+  desc: "Convert an XML document into a JSON document.",
+  runLabel: "Convert",
+  outputExt: "json",
+  outputLabel: "JSON output",
+  loadingLabel: "PARSING_XML",
+  sample: `<employee id="101">\n  <name>Grace Hopper</name>\n  <skills>\n    <skill>COBOL</skill>\n    <skill>compilers</skill>\n  </skills>\n</employee>`,
+  options: [
+    { id: "indent", type: "select", label: "Indent", choices: INDENT_CHOICES, default: "2" },
+    { id: "compact", type: "checkbox", label: "Minify output", default: false }
+  ],
+  run(input, opts) {
+    const doc = parseXmlSafe(input);
+    const rootEl = doc.documentElement;
+    const converted = { [rootEl.nodeName]: xmlNodeToJson(rootEl) };
+    return opts.compact ? JSON.stringify(converted) : JSON.stringify(converted, null, Number(opts.indent));
+  }
+};
+
+})();
+
+/* ---- js/tools/xml-formatter.js ---- */
+const xmlFormatter = (function () {
+
+function prettyPrintXml(xmlText, indentUnit) {
+  const doc = parseXmlSafe(xmlText);
+  const out = [];
+
+  function walk(node, depth) {
+    if (node.nodeType === 3) {
+      const text = node.nodeValue.trim();
+      if (text !== "") out.push(indentUnit.repeat(depth) + text);
+      return;
+    }
+    if (node.nodeType === 4) {
+      out.push(indentUnit.repeat(depth) + `<![CDATA[${node.nodeValue}]]>`);
+      return;
+    }
+    if (node.nodeType === 8) {
+      out.push(indentUnit.repeat(depth) + `<!--${node.nodeValue}-->`);
+      return;
+    }
+    if (node.nodeType !== 1) return;
+
+    const pad = indentUnit.repeat(depth);
+    const attrs = Array.from(node.attributes || [])
+      .map(a => ` ${a.name}="${escapeXmlAttr(a.value)}"`)
+      .join("");
+
+    const childNodes = Array.from(node.childNodes).filter(n => !(n.nodeType === 3 && n.nodeValue.trim() === ""));
+
+    if (childNodes.length === 0) {
+      out.push(`${pad}<${node.nodeName}${attrs}/>`);
+      return;
+    }
+    if (childNodes.length === 1 && childNodes[0].nodeType === 3) {
+      out.push(`${pad}<${node.nodeName}${attrs}>${childNodes[0].nodeValue.trim()}</${node.nodeName}>`);
+      return;
+    }
+    out.push(`${pad}<${node.nodeName}${attrs}>`);
+    for (const child of childNodes) walk(child, depth + 1);
+    out.push(`${pad}</${node.nodeName}>`);
+  }
+
+  if (doc.firstChild && doc.firstChild.nodeType === 7) {
+    out.push(`<?${doc.firstChild.target} ${doc.firstChild.data}?>`);
+  }
+  walk(doc.documentElement, 0);
+  return out.join("\n");
+}
+
+const INDENT_CHOICES = [
+  { value: "2", label: "2 spaces" },
+  { value: "4", label: "4 spaces" },
+  { value: "tab", label: "Tab" }
+];
+
+return {
+  id: "xml-formatter",
+  menuId: "xml",
+  title: "XML Formatter",
+  desc: "Pretty-print and re-indent an XML document.",
+  runLabel: "Format",
+  outputExt: "xml",
+  outputLabel: "Formatted XML",
+  loadingLabel: "FORMATTING",
+  sample: `<order id="A-1042"><item sku="X1" qty="2"/><item sku="X2" qty="1"/><total>58.5</total></order>`,
+  options: [
+    { id: "indent", type: "select", label: "Indent", choices: INDENT_CHOICES, default: "2" }
+  ],
+  run(input, opts) {
+    const unit = opts.indent === "tab" ? "\t" : " ".repeat(Number(opts.indent));
+    return prettyPrintXml(input, unit);
+  }
+};
+
+})();
+
+/* ---- js/config/tools.config.js ---- */
+/**
+ * tools.config.js
+ * ---------------------------------------------------------------------
+ * The single source of truth for which tools exist. Everything else
+ * (the sidebar menu, the router, the home directory) is generated from
+ * this file, so it's also the only file you touch to add a new tool.
+ *
+ * HOW TO ADD A NEW TOOL
+ *   1. Create js/tools/your-tool.js. It must `export default` an
+ *      object shaped like the ones below:
+ *        {
+ *          id:           "your-tool"        // becomes the route: #/your-tool
+ *          menuId:       "json" | "xml" | "convert" | <new id>
+ *          title:        "Human title"
+ *          desc:         "One sentence, shown under the title."
+ *          runLabel:     "Beautify"          // primary button text
+ *          outputExt:    "json" | "xml" | "txt"
+ *          outputLabel:  "Label above the output pane"
+ *          loadingLabel: "SHOUTY_STATUS_WORD"   // shown in the loader
+ *          sample:       "example input text"
+ *          options:      []   // see OPTION SHAPES below
+ *          showStats:    false // optional: renders a stats-card row
+ *          run(input, opts)    // returns a string, or {output, stats}
+ *        }
+ *   2. Import it below and add it to TOOL_MODULES.
+ *   3. If it belongs in a new menu group, add that group to MENUS.
+ *   That's it — the sidebar, router and home page all update themselves.
+ *
+ * OPTION SHAPES (tool.options entries)
+ *   { id, type: "select",   label, choices: [{value,label}], default }
+ *   { id, type: "checkbox", label, default: boolean }
+ *   { id, type: "text",     label, default: string }
+ * ---------------------------------------------------------------------
+ */
+
+
+/** Ordered list of registered tool modules. Add new imports here. */
+const TOOL_MODULES = [
+  jsonBeautifier,
+  jsonMinifier,
+  jsonValidator,
+  jsonToXml,
+  xmlToJson,
+  xmlFormatter
+];
+
+/** Menu group id -> display label, in sidebar order. */
+const MENUS = {
+  json: "JSON",
+  xml: "XML",
+  convert: "Convert"
+};
+
+const TOOL_REGISTRY = TOOL_MODULES;
+
+const TOOL_BY_ID = Object.fromEntries(TOOL_REGISTRY.map(t => [t.id, t]));
+
+/** Tools grouped by menuId, in MENUS order. */
+function toolsByMenu() {
+  const groups = Object.keys(MENUS).map(menuId => ({
+    menuId,
+    label: MENUS[menuId],
+    tools: TOOL_REGISTRY.filter(t => t.menuId === menuId)
+  }));
+  return groups.filter(g => g.tools.length > 0);
+}
+
+
+/* ---- js/ui/sidebar.js ---- */
+/**
+ * sidebar.js
+ * Renders the left navigation from toolsByMenu(), so adding a tool to
+ * tools.config.js automatically adds its entry here.
+ */
+
+function renderSidebar(currentToolId) {
+  const sidebar = document.getElementById("sidebar");
+  clear(sidebar);
+
+  for (const group of toolsByMenu()) {
+    const groupEl = el("div", { class: "side-group" });
+    groupEl.appendChild(el("div", { class: "side-group-label" }, group.label));
+    for (const tool of group.tools) {
+      const isActive = tool.id === currentToolId;
+      groupEl.appendChild(
+        el("a", { class: "side-link" + (isActive ? " active" : ""), href: `#/${tool.id}` }, [
+          el("span", { class: "dot" }),
+          tool.title
+        ])
+      );
+    }
+    sidebar.appendChild(groupEl);
+  }
+}
+
+
+/* ---- js/ui/home-view.js ---- */
+/**
+ * home-view.js
+ * The "/" route: a directory of every registered tool, generated from
+ * the tool registry so it never needs manual updates.
+ */
+
+function renderHome() {
+  const view = document.getElementById("view");
+  clear(view);
+
+  view.appendChild(
+    el("div", { class: "home-head" }, [
+      el("h1", {}, "Data Tools"),
+      el("p", {}, "A small set of JSON and XML utilities. Each tool lives at its own address below \u2014 bookmark or link directly to the one you need.")
+    ])
+  );
+
+  const table = el("table", { class: "index-table" });
+  table.appendChild(
+    el("thead", {}, el("tr", {}, [el("th", {}, "Tool"), el("th", {}, "Path"), el("th", {}, "Description")]))
+  );
+  const tbody = el("tbody");
+  for (const tool of TOOL_REGISTRY) {
+    tbody.appendChild(
+      el("tr", {}, [
+        el("td", {}, [
+          el("a", { href: `#/${tool.id}` }, tool.title),
+          el("span", { class: "menu-pill" }, MENUS[tool.menuId] || tool.menuId)
+        ]),
+        el("td", { class: "index-path" }, `#/${tool.id}`),
+        el("td", { class: "index-desc" }, tool.desc)
+      ])
+    );
+  }
+  table.appendChild(tbody);
+  view.appendChild(table);
+}
+
+
+/* ---- js/ui/tool-view.js ---- */
+/**
+ * tool-view.js
+ * Builds the full workspace for one tool. Generic across all tools —
+ * it reads the tool's `options`, `run()`, and metadata rather than
+ * having tool-specific branches, so a new tool needs no changes here.
+ */
+
+const MIME_BY_EXT = { json: "application/json", xml: "application/xml", txt: "text/plain" };
+
+function renderTool(tool) {
+  const view = document.getElementById("view");
+  clear(view);
+
+  const state = {};
+  for (const opt of tool.options) state[opt.id] = opt.default;
+
+  view.appendChild(
+    el("div", { class: "tool-head" }, [el("h1", {}, tool.title), el("p", {}, tool.desc)])
+  );
+
+  /* ---- Toolbar ---- */
+  const toolbar = el("div", { class: "toolbar" });
+  for (const opt of tool.options) {
+    const label = el("label", { class: "opt" }, opt.label + ":");
+    if (opt.type === "select") {
+      const select = el("select", { onchange: e => { state[opt.id] = e.target.value; } },
+        opt.choices.map(c => el("option", { value: c.value }, c.label)));
+      select.value = opt.default;
+      label.appendChild(select);
+    } else if (opt.type === "checkbox") {
+      const cb = el("input", { type: "checkbox", onchange: e => { state[opt.id] = e.target.checked; } });
+      cb.checked = opt.default;
+      label.appendChild(cb);
+    } else if (opt.type === "text") {
+      label.appendChild(el("input", {
+        type: "text",
+        value: opt.default,
+        oninput: e => { state[opt.id] = e.target.value; }
+      }));
+    }
+    toolbar.appendChild(label);
+  }
+  toolbar.appendChild(el("div", { class: "spacer" }));
+
+  const sampleBtn = el("button", { class: "btn btn-ghost", type: "button" }, [
+    el("span", { class: "glyph" }, "\u2726"), "Load sample"
+  ]);
+  const clearBtn = el("button", { class: "btn btn-ghost", type: "button" }, [
+    el("span", { class: "glyph" }, "\u2715"), "Clear"
+  ]);
+  const runBtn = el("button", { class: "btn btn-primary", type: "button" }, [
+    el("span", { class: "glyph" }, "\u25b6"), tool.runLabel || "Run"
+  ]);
+  toolbar.appendChild(sampleBtn);
+  toolbar.appendChild(clearBtn);
+  toolbar.appendChild(runBtn);
+  view.appendChild(toolbar);
+
+  /* ---- Loader ---- */
+  const loaderMount = el("div");
+  view.appendChild(loaderMount);
+  const loader = new Loader(loaderMount);
+
+  /* ---- Optional stats grid (validator-style tools) ---- */
+  let statsGrid = null;
+  if (tool.showStats) {
+    statsGrid = el("div", { class: "stats-grid" });
+    view.appendChild(statsGrid);
+  }
+
+  /* ---- Panes ---- */
+  const inputArea = el("textarea", { spellcheck: "false", placeholder: "Paste input here\u2026" });
+  const outputArea = el("textarea", { spellcheck: "false", readonly: true, placeholder: "Output will appear here." });
+
+  const copyBtn = el("button", { class: "icon-btn", type: "button" }, [el("span", { class: "glyph" }, "\u29c9"), "Copy"]);
+  const downloadBtn = el("button", { class: "icon-btn", type: "button" }, [el("span", { class: "glyph" }, "\u2913"), "Download"]);
+
+  view.appendChild(
+    el("div", { class: "panes" }, [
+      el("div", { class: "pane" }, [el("div", { class: "pane-label" }, ["Input"]), inputArea]),
+      el("div", { class: "pane" }, [
+        el("div", { class: "pane-label" }, [tool.outputLabel, el("div", { class: "pane-actions" }, [copyBtn, downloadBtn])]),
+        outputArea
+      ])
+    ])
+  );
+
+  const banner = el("div", { class: "banner" });
+  view.appendChild(banner);
+  const statbar = el("div", { class: "statbar" });
+  view.appendChild(statbar);
+
+  /* ---- Helpers ---- */
+  function setBanner(kind, message) {
+    banner.className = `banner show ${kind}`;
+    banner.textContent = message;
+  }
+  function clearBanner() {
+    banner.className = "banner";
+    banner.textContent = "";
+  }
+  function updateStatbar(inputText, outputText, ms) {
+    clear(statbar);
+    const rows = [
+      ["Input", `${byteSize(inputText)} bytes \u00b7 ${lineCount(inputText)} lines`],
+      ["Output", `${byteSize(outputText)} bytes \u00b7 ${lineCount(outputText)} lines`],
+      ["Time", `${ms.toFixed(1)} ms`]
+    ];
+    for (const [label, value] of rows) {
+      statbar.appendChild(el("span", {}, [el("b", {}, label + ": "), value]));
+    }
+  }
+  function renderStats(stats) {
+    if (!statsGrid || !stats) return;
+    clear(statsGrid);
+    const cards = [
+      ["Root type", stats.rootType], ["Objects", stats.objects], ["Arrays", stats.arrays],
+      ["Keys", stats.keys], ["Strings", stats.strings], ["Numbers", stats.numbers],
+      ["Booleans", stats.booleans], ["Nulls", stats.nulls], ["Max depth", stats.maxDepth]
+    ];
+    for (const [label, value] of cards) {
+      statsGrid.appendChild(el("div", { class: "stat-card" }, [el("div", { class: "n" }, String(value)), el("div", { class: "l" }, label)]));
+    }
+  }
+
+  /* ---- Execute ---- */
+  async function execute() {
+    clearBanner();
+    const inputText = inputArea.value;
+    const wallStart = performance.now();
+    try {
+      const result = await loader.run(tool.loadingLabel || "PROCESSING", () => tool.run(inputText, state));
+      const elapsed = performance.now() - wallStart;
+      if (result && typeof result === "object" && "output" in result) {
+        outputArea.value = result.output;
+        renderStats(result.stats);
+        updateStatbar(inputText, result.output, elapsed);
+        setBanner("success", "Valid \u2014 no syntax errors found.");
+      } else {
+        outputArea.value = result;
+        updateStatbar(inputText, result, elapsed);
+        setBanner("success", `${tool.title} completed.`);
+      }
+    } catch (err) {
+      outputArea.value = "";
+      if (statsGrid) clear(statsGrid);
+      clear(statbar);
+      setBanner("error", err.message);
+    }
+  }
+
+  runBtn.addEventListener("click", execute);
+  sampleBtn.addEventListener("click", () => { inputArea.value = tool.sample; execute(); });
+  clearBtn.addEventListener("click", () => {
+    inputArea.value = "";
+    outputArea.value = "";
+    if (statsGrid) clear(statsGrid);
+    clear(statbar);
+    clearBanner();
+    inputArea.focus();
+  });
+  inputArea.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); execute(); }
+  });
+  copyBtn.addEventListener("click", async () => {
+    if (!outputArea.value) { showToast("Nothing to copy yet"); return; }
+    const ok = await copyText(outputArea.value);
+    showToast(ok ? "Copied to clipboard" : "Copy failed \u2014 select and copy manually");
+  });
+  downloadBtn.addEventListener("click", () => {
+    if (!outputArea.value) { showToast("Nothing to download yet"); return; }
+    const mime = MIME_BY_EXT[tool.outputExt] || "text/plain";
+    downloadText(`${tool.id}-output.${tool.outputExt}`, outputArea.value, mime);
+    showToast("Download started");
+  });
+}
+
+
+/* ---- js/ui/theme-toggle.js ---- */
+/**
+ * theme-toggle.js
+ * Cycles data-theme between "auto" (unset, follows the OS), "dark" and
+ * "light". Preference is remembered per-browser via localStorage; if
+ * storage is unavailable the toggle still works for the current visit.
+ */
+const STORAGE_KEY = "data-tools-theme";
+
+function initThemeToggle() {
+  const button = document.getElementById("themeToggle");
+
+  let stored = null;
+  try { stored = localStorage.getItem(STORAGE_KEY); } catch (e) { /* storage unavailable */ }
+  if (stored === "light" || stored === "dark") {
+    document.documentElement.setAttribute("data-theme", stored);
+  }
+  updateLabel(button);
+
+  button.addEventListener("click", () => {
+    const current = document.documentElement.getAttribute("data-theme");
+    const next = current === "dark" ? "light" : current === "light" ? null : "dark";
+
+    if (next) document.documentElement.setAttribute("data-theme", next);
+    else document.documentElement.removeAttribute("data-theme");
+
+    try {
+      if (next) localStorage.setItem(STORAGE_KEY, next);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch (e) { /* storage unavailable, theme still applies for this session */ }
+
+    updateLabel(button);
+  });
+}
+
+function updateLabel(button) {
+  const current = document.documentElement.getAttribute("data-theme");
+  button.textContent = "theme: " + (current || "auto");
+}
+
+
+/* ---- js/app.js ---- */
+/**
+ * app.js
+ * Entry point (loaded as a module from index.html). Wires the router to
+ * the sidebar and either the home view or a tool view.
+ */
+
+function handleRoute(path) {
+  document.getElementById("routepath").textContent = "/" + path;
+
+  if (path === "") {
+    renderSidebar(null);
+    renderHome();
+    return;
+  }
+
+  const tool = TOOL_BY_ID[path];
+  if (!tool) {
+    renderSidebar(null);
+    const view = document.getElementById("view");
+    clear(view);
+    view.appendChild(
+      el("div", { class: "tool-head" }, [
+        el("h1", {}, "Not found"),
+        el("p", {}, `There's no tool at "/${path}". Choose one from the menu on the left.`)
+      ])
+    );
+    return;
+  }
+
+  renderSidebar(tool.id);
+  renderTool(tool);
+}
+
+initThemeToggle();
+initRouter(handleRoute);
+
+</script>
+</body>
+</html>
